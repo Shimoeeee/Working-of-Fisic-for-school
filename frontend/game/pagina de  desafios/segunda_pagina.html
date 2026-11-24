@@ -1,24 +1,31 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escolha de dasafio</title>
+    <link rel="icon" href="data:,">
+    <title>Escolha de desafio | Grupo 5</title>
     <link rel="stylesheet" href="segunda_pagina.css">
 </head>
 <body>
     <header>
-
         <h1>COMECE O JOGO ESCOLHENDO O DESAFIO</h1>
         <h2>CADA DESAFIO TEM O MESMO GRAU DE DIFICULDADE</h2>
 
-    <a href="/frontend/game/game.html">
-        <button>DESAFIO 1</button>
-        <button>DESAFIO 2</button>
-        <button>DESAFIO 3</button>
-    </a>
+        <p id="statusRodada" class="status-rodada" role="status" aria-live="polite"></p>
 
+        <div class="desafios" aria-label="Desafios disponíveis">
+            <button type="button" data-desafio="1">DESAFIO 1</button>
+            <button type="button" data-desafio="2">DESAFIO 2</button>
+            <button type="button" data-desafio="3">DESAFIO 3</button>
+        </div>
+
+        <button id="novaRodada" class="nova-rodada" type="button" hidden>
+            INICIAR NOVA RODADA
+        </button>
+        <a class="voltar" href="../../../main_file.html">Voltar à apresentação</a>
     </header>
 
+    <script src="../challenge-config.js"></script>
 </body>
 </html>

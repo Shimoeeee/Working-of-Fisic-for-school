@@ -67,12 +67,19 @@ h2 {
     letter-spacing: 0.07em;
 }
 
-header > a {
+.status-rodada {
+    min-height: 22px;
+    margin: 22px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.desafios {
     width: min(100%, 440px);
     display: grid;
     gap: 14px;
-    margin-top: 32px;
-    text-decoration: none;
+    margin-top: 20px;
 }
 
 button {
@@ -89,14 +96,49 @@ button {
     transition: background-color 160ms ease, transform 160ms ease;
 }
 
-button:hover {
+button:hover:not(:disabled) {
     transform: translateY(-2px);
     background: var(--green-hover);
 }
 
-button:focus-visible {
+button:disabled {
+    background: #d9dfda;
+    color: #606d65;
+    cursor: not-allowed;
+}
+
+button:focus-visible,
+.voltar:focus-visible {
     outline: 3px solid var(--yellow);
     outline-offset: 3px;
+}
+
+.nova-rodada {
+    width: min(100%, 440px);
+    margin-top: 14px;
+    border: 1px solid var(--green);
+    background: #fff;
+    color: var(--green);
+}
+
+.nova-rodada:hover {
+    background: #eef3ef;
+}
+
+.nova-rodada[hidden] {
+    display: none;
+}
+
+.voltar {
+    margin-top: 24px;
+    color: var(--green);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.voltar:hover {
+    text-decoration: underline;
 }
 
 @media (max-width: 520px) {
@@ -117,9 +159,9 @@ button:focus-visible {
         font-size: 12px;
     }
 
-    header > a {
+    .desafios {
         gap: 12px;
-        margin-top: 26px;
+        margin-top: 18px;
     }
 }
 
