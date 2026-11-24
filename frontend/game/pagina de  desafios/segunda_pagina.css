@@ -1,0 +1,130 @@
+﻿:root {
+    --page: #bababa;
+    --ink: #202c27;
+    --muted: #66736d;
+    --green: #285d49;
+    --green-hover: #1c4435;
+    --line: #dce3dc;
+    --yellow: #e9bd49;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 24px;
+    background: var(--page);
+    color: var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+    position: relative;
+    width: min(100%, 700px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: clamp(38px, 7vw, 62px);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 16px 42px rgba(29, 52, 40, 0.08);
+    text-align: center;
+}
+
+header::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 8px;
+    background: var(--green);
+    content: "";
+}
+
+h1 {
+    max-width: 540px;
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(26px, 4.5vw, 40px);
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+}
+
+h2 {
+    max-width: 480px;
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.6;
+    letter-spacing: 0.07em;
+}
+
+header > a {
+    width: min(100%, 440px);
+    display: grid;
+    gap: 14px;
+    margin-top: 32px;
+    text-decoration: none;
+}
+
+button {
+    width: 100%;
+    min-height: 58px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--green);
+    color: #fff;
+    cursor: pointer;
+    font: 700 14px Arial, Helvetica, sans-serif;
+    letter-spacing: 0.04em;
+    transition: background-color 160ms ease, transform 160ms ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    background: var(--green-hover);
+}
+
+button:focus-visible {
+    outline: 3px solid var(--yellow);
+    outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+    body {
+        padding: 18px;
+    }
+
+    header {
+        padding: 44px 24px 30px;
+        border-radius: 18px;
+    }
+
+    h1 {
+        font-size: clamp(24px, 7vw, 34px);
+    }
+
+    h2 {
+        font-size: 12px;
+    }
+
+    header > a {
+        gap: 12px;
+        margin-top: 26px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    button {
+        transition: none;
+    }
+}
