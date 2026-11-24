@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <link rel="stylesheet" href="game.css">
+    <link rel="stylesheet" href="game.js">
+</head>
+<body>
+
+    <h1>🚦 DESAFIO DA ONDA VERDE</h1>
+    <p>Descubra a velocidade perfeita para atravessar a avenida!</p>
+
+<div class="painel">
+
+  <h3>🏎️ Escolha a velocidade</h3>
+
+  <div class="valor">
+    <span id="velocidadeValor">5</span> km/h
+  </div>
+
+  <input type="range" id="velocidade"
+         min="2" max="20" value="5" step="1">
+
+  <div class="dados">
+    <div>🏆 Pontos: <strong id="pontos">0</strong></div>
+    <div>⏱ Tempo: <strong id="tempo">0.0 s</strong></div>
+  </div>
+
+  <button onclick="iniciar()">▶ INICIAR</button>
+  <button onclick="reiniciar()">↻ REINICIAR</button>
+
+  <p id="mensagem">Escolha a velocidade e comece!</p>
+
+</div>
+
+<div class="estrada" id="estrada">
+
+  <div class="faixa"></div>
+
+  <div class="carro" id="carro">🚗</div>
+
+  <div class="semaforo" style="left:28%">
+    <div class="luz vermelho"></div>
+    <div class="luz verde"></div>
+  </div>
+  <div class="nome" style="left:28%">SINAL 1</div>
+
+  <div class="semaforo" style="left:52%">
+    <div class="luz vermelho"></div>
+    <div class="luz verde"></div>
+  </div>
+  <div class="nome" style="left:52%">SINAL 2</div>
+
+  <div class="semaforo" style="left:76%">
+    <div class="luz vermelho"></div>
+    <div class="luz verde"></div>
+  </div>
+  <div class="nome" style="left:76%">SINAL 3</div>
+
+</div>
+
+<div class="painel">
+
+  <h2>Formula de ajuda</h2>
+
+  <h2>V = Distância / Tempo</h2>
+
+  <p>
+    O jogo utiliza o Movimento Uniforme.
+    A velocidade determina o tempo de chegada
+    aos semáforos.
+  </p>
+
+  <p id="calculo">
+    Escolha uma velocidade para começar.
+  </p>
+
+</div>
+
+<!--Add JavaScript-->
+
+<script>
+    const estrada = document.getElementById("estrada");
+const carro = document.getElementById("carro");
+const controle = document.getElementById("velocidade");
+
+const semaforos = [28, 52, 76];
+
+const escala = 20;
+const velocidadePremiada = 5;
+
+let inicio = 0;
+let animacao = null;
+let pontos = 0;
+let passados = [];
+let terminou = true;
+let posicaoInicial = 0;
+let posicoes = [];
+let temposChegada = [];
+let velocidadeMs = 0;
+let velocidadeEscolhida = 5;
+let venceu = false;
+
+// Atualizar velocidade na tela
+
+controle.addEventListener("input", () => {
+  document.getElementById("velocidadeValor").textContent =
+    controle.value;
+});
+
+// Controlar os semáforos
+
+function atualizarSemaforo(i, verde) {
+
+  const sinal = document.querySelectorAll(".semaforo")[i];
+
+  sinal.querySelector(".vermelho")
+    .classList.toggle("aceso", !verde);
+
+  sinal.querySelector(".verde")
+    .classList.toggle("aceso", verde);
+}
+
+function todosVermelhos() {
+  semaforos.forEach((_, i) => atualizarSemaforo(i, false));
+}
+
+// Iniciar
+
+function iniciar() {
+
+  cancelAnimationFrame(animacao);
+
+  pontos = 0;
+  passados = [];
+  terminou = false;
+
+  document.getElementById("pontos").textContent = 0;
+  document.getElementById("tempo").textContent = "0.0 s";
+
+  velocidadeEscolhida = Number(controle.value);
+  velocidadeMs = velocidadeEscolhida / 3.6;
+
+  const largura = estrada.clientWidth;
+
+  posicaoInicial = largura * 0.05;
+  posicoes = semaforos.map(p => largura * p / 100);
+
+  carro.style.left = posicaoInicial + "px";
+
+  todosVermelhos();
+
+  // Calcula o tempo de chegada de cada semáforo
+
+  temposChegada = posicoes.map(pos => {
+
+    const distancia = (pos - posicaoInicial) / escala;
+
+    return distancia / velocidadeMs;
+
+  });
+
+  document.getElementById("calculo").textContent =
+    "Velocidade: " + velocidadeEscolhida +
+    " km/h (" + velocidadeMs.toFixed(2) +
+    " m/s). Tempos de chegada: " +
+    temposChegada.map(t => t.toFixed(1) + " s").join(" | ");
+
+  venceu = velocidadeEscolhida === velocidadePremiada;
+
+  if (venceu) {
+    document.getElementById("mensagem").textContent =
+      "🟢 Velocidade perfeita! Prepare-se para a Onda Verde!";
+  } else {
+    document.getElementById("mensagem").textContent =
+      "🔴 Velocidade incorreta! Os semáforos estarão vermelhos.";
+  }
+
+  inicio = performance.now();
+
+  animacao = requestAnimationFrame(animar);
+}
+
+// Movimento do carrinho
+
+function animar(agora) {
+
+  if (terminou) return;
+
+  const tempoAtual = (agora - inicio) / 1000;
+
+  const velocidadePixels = velocidadeMs * escala;
+
+  // Movimento Uniforme
+
+  const x = posicaoInicial + velocidadePixels * tempoAtual;
+
+  carro.style.left = x + "px";
+
+  document.getElementById("tempo").textContent =
+    tempoAtual.toFixed(1) + " s";
+
+  semaforos.forEach((pos, i) => {
+
+    const chegada = temposChegada[i];
+
+    // Somente 5 km/h recebe a sincronização verde.
+    // Para as outras velocidades, todos ficam vermelhos.
+
+    const inicioVerde = chegada - 2.5;
+    const fimVerde = chegada + 2.5;
+
+    const verde = venceu &&
+      tempoAtual >= inicioVerde &&
+      tempoAtual <= fimVerde;
+
+    atualizarSemaforo(i, verde);
+
+    // Registrar passagem
+
+    if (!passados.includes(i) && x >= pos) {
+
+      passados.push(i);
+
+      if (venceu) {
+
+        pontos += 10;
+
+        document.getElementById("mensagem").textContent =
+          "✅ Sinal " + (i + 1) + " no verde! +10 pontos";
+
+      } else {
+
+        document.getElementById("mensagem").textContent =
+          "🔴 Sinal " + (i + 1) + " no vermelho!";
+
+      }
+
+      document.getElementById("pontos").textContent = pontos;
+
+    }
+
+  });
+
+  // Final da avenida
+
+  if (x >= estrada.clientWidth - 30) {
+
+    terminou = true;
+    todosVermelhos();
+
+    if (venceu && passados.length === 3) {
+
+      document.getElementById("mensagem").textContent =
+        "🏆 VITÓRIA! Você passou pelos três sinais no verde! 30 pontos!";
+
+    } else {
+
+      document.getElementById("mensagem").textContent =
+        "🚗 Fim do percurso! Tente novamente com 5 km/h.";
+
+    }
+
+    return;
+  }
+
+  animacao = requestAnimationFrame(animar);
+}
+
+// Reiniciar
+
+function reiniciar() {
+
+  cancelAnimationFrame(animacao);
+
+  terminou = true;
+  pontos = 0;
+  passados = [];
+
+  carro.style.left = "5%";
+
+  document.getElementById("pontos").textContent = 0;
+  document.getElementById("tempo").textContent = "0.0 s";
+
+  todosVermelhos();
+
+  document.getElementById("mensagem").textContent =
+    "Escolha uma velocidade e aperte iniciar!";
+
+}
+
+todosVermelhos();
+</script>
+
+</body>
+</html>

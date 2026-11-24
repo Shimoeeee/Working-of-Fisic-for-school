@@ -1,0 +1,134 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 15px;
+  background: #e9f5ec;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  color: #183322;
+}
+
+h1 { color: #147b3c; }
+
+.painel {
+  max-width: 800px;
+  margin: 15px auto;
+  padding: 18px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 3px 10px #0001;
+}
+
+.valor {
+  font-size: 30px;
+  font-weight: bold;
+  color: #168344;
+}
+
+input[type=range] {
+  width: 220px;
+  accent-color: #168344;
+}
+
+button {
+  background: #168344;
+  color: white;
+  border: none;
+  padding: 13px 22px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 8px;
+}
+
+.estrada {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  height: 210px;
+  margin: 25px auto;
+  background: #424242;
+  border-top: 9px solid #999;
+  border-bottom: 9px solid #999;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.faixa {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  border-top: 4px dashed white;
+}
+
+.carro {
+  position: absolute;
+  top: 43%;
+  left: 5%;
+  font-size: 35px;
+  transform: translateY(-50%);
+  z-index: 5;
+}
+
+.semaforo {
+  position: absolute;
+  top: 12px;
+  transform: translateX(-50%);
+  background: #171717;
+  padding: 6px;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 4;
+}
+
+.luz {
+  width: 17px;
+  height: 17px;
+  background: #555;
+  border-radius: 50%;
+}
+
+.vermelho.aceso {
+  background: #ff2222;
+  box-shadow: 0 0 9px red;
+}
+
+.verde.aceso {
+  background: #24ff63;
+  box-shadow: 0 0 9px lime;
+}
+
+.nome {
+  position: absolute;
+  top: 100px;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 12px;
+}
+
+.dados {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dados strong {
+  font-size: 24px;
+  color: #168344;
+}
+
+#mensagem {
+  min-height: 28px;
+  font-weight: bold;
+}
+
+@media(max-width:500px) {
+  .estrada { height: 180px; }
+  .carro { font-size: 27px; }
+  .nome { font-size: 10px; }
+}
