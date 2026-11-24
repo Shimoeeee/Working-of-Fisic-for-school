@@ -1,0 +1,134 @@
+﻿:root {
+    --page: #bababa;
+    --ink: #0a9159;
+    --muted: #66736d;
+    --green: #285d49;
+    --green-hover: #1c4435;
+    --yellow: #fbfbfb;
+    --line: #dce3dc;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    margin: 0;
+    padding: 40px 22px;
+    background: var(--page);
+    color: var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+    position: relative;
+    width: min(100%, 760px);
+    margin: auto auto 0;
+    overflow: hidden;
+    padding: clamp(38px, 7vw, 68px);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 16px 42px rgba(29, 52, 40, 0.08);
+    text-align: center;
+}
+
+header::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 8px;
+    background: var(--green);
+    content: "";
+}
+
+h1 {
+    position: relative;
+    margin: 0;
+    font-size: clamp(36px, 6vw, 56px);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+}
+
+h2 {
+    position: relative;
+    margin: 16px 0 26px;
+    color: var(--green);
+    font-size: clamp(18px, 3vw, 22px);
+    font-weight: 600;
+}
+
+header p {
+    max-width: 500px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+hr {
+    width: 64px;
+    height: 4px;
+    margin: 30px auto 0;
+    border: 0;
+    border-radius: 4px;
+    background: var(--yellow);
+}
+
+.game {
+    display: inline-block;
+    margin: 0 auto auto;
+    text-decoration: none;
+}
+
+.game button {
+    min-height: 54px;
+    padding: 0 26px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--green);
+    color: #fff;
+    cursor: pointer;
+    font: 700 14px Arial, Helvetica, sans-serif;
+    letter-spacing: 0.04em;
+    transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.game:hover button {
+    transform: translateY(-5px);
+    background: var(--green-hover);
+}
+
+.game:focus-visible {
+    border-radius: 8px;
+    outline: 3px solid var(--yellow);
+    outline-offset: 4px;
+}
+
+@media (max-width: 520px) {
+    body {
+        padding: 24px 16px;
+    }
+
+    header {
+        padding: 42px 24px;
+        border-radius: 18px;
+    }
+
+    header p {
+        font-size: 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game button {
+        transition: none;
+    }
+}
