@@ -100,8 +100,9 @@ input[type="range"]:disabled {
 }
 
 .conversao {
-    color: #66736d;
+    color: #8a5a00;
     font-size: 14px;
+    font-weight: 700;
 }
 
 .limite-velocidade {
