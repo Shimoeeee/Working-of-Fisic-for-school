@@ -67,6 +67,19 @@ input:focus-visible {
     margin: 0 0 20px;
     color: #53675a;
     font-size: 14px;
+    line-height: 1.6;
+}
+
+.objetivo-desafio {
+    max-width: 680px;
+    margin: 0 auto 22px;
+    padding: 12px 16px;
+    border-left: 4px solid #168344;
+    border-radius: 4px;
+    background: #f2f8f3;
+    color: #405348;
+    line-height: 1.6;
+    text-align: left;
 }
 
 .valor {

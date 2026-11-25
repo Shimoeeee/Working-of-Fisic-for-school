@@ -26,6 +26,113 @@
         <a class="voltar" href="../../../main_file.html">Voltar à apresentação</a>
     </header>
 
-    <script src="../challenge-config.js"></script>
+    <script>
+        (() => {
+            const botoes = [...document.querySelectorAll("[data-desafio]")];
+            const status = document.getElementById("statusRodada");
+            const botaoNovaRodada = document.getElementById("novaRodada");
+            const idsValidos = new Set(botoes.map(botao => Number(botao.dataset.desafio)));
+            const chaveRodadaSessao = "semaforo-jogo-rodada-sessao-v1";
+            const nomeTrava = `${chaveRodadaSessao}:lock`;
+
+            function rodadaVazia(numero = 1) {
+                return { numero, desafiosEscolhidos: [] };
+            }
+
+            function normalizarRodada(valor) {
+                if (!valor || !Number.isInteger(valor.numero) || !Array.isArray(valor.desafiosEscolhidos)) {
+                    return null;
+                }
+
+                return {
+                    numero: Math.max(1, valor.numero),
+                    desafiosEscolhidos: [...new Set(valor.desafiosEscolhidos.map(Number))]
+                        .filter(id => idsValidos.has(id))
+                };
+            }
+
+            function lerRodada() {
+                try {
+                    const conteudo = window.sessionStorage.getItem(chaveRodadaSessao);
+                    if (conteudo) {
+                        const rodada = normalizarRodada(JSON.parse(conteudo));
+                        if (rodada) return rodada;
+                    }
+                } catch (_) {
+                    // Sem armazenamento de sessão, inicia uma rodada sem escolhas anteriores.
+                }
+                return rodadaVazia();
+            }
+
+            function salvarRodada(rodada) {
+                try {
+                    window.sessionStorage.setItem(chaveRodadaSessao, JSON.stringify(rodada));
+                    return true;
+                } catch (_) {
+                    // Não grava as escolhas em armazenamento persistente.
+                }
+                return false;
+            }
+
+            function comTrava(operacao) {
+                const travas = window.navigator && window.navigator.locks;
+                return travas ? travas.request(nomeTrava, operacao) : Promise.resolve(operacao());
+            }
+
+            function atualizar() {
+                const rodada = lerRodada();
+                const escolhidos = new Set(rodada.desafiosEscolhidos);
+                const completa = escolhidos.size === idsValidos.size;
+
+                botoes.forEach(botao => {
+                    const id = Number(botao.dataset.desafio);
+                    const indisponivel = escolhidos.has(id);
+                    botao.disabled = indisponivel;
+                    botao.textContent = indisponivel ? `DESAFIO ${id} — ESCOLHIDO` : `DESAFIO ${id}`;
+                });
+
+                if (completa) {
+                    status.textContent = `Rodada ${rodada.numero} completa. Inicie uma nova rodada para liberar os desafios.`;
+                } else {
+                    const restantes = idsValidos.size - escolhidos.size;
+                    status.textContent = `Rodada ${rodada.numero}: ${restantes} desafio${restantes === 1 ? "" : "s"} ${restantes === 1 ? "disponível" : "disponíveis"}.`;
+                }
+
+                botaoNovaRodada.hidden = !completa;
+            }
+
+            botoes.forEach(botao => {
+                botao.addEventListener("click", async () => {
+                    const id = Number(botao.dataset.desafio);
+                    const reservado = await comTrava(() => {
+                        const rodada = lerRodada();
+                        if (!idsValidos.has(id) || rodada.desafiosEscolhidos.includes(id)) return false;
+                        rodada.desafiosEscolhidos.push(id);
+                        return salvarRodada(rodada);
+                    });
+
+                    if (!reservado) {
+                        status.textContent = "Não foi possível reservar esse desafio. Confira o armazenamento do navegador e tente novamente.";
+                        atualizar();
+                        return;
+                    }
+
+                    window.location.href = `../game.html?challenge=${id}`;
+                });
+            });
+
+            botaoNovaRodada.addEventListener("click", async () => {
+                await comTrava(() => {
+                    const rodada = lerRodada();
+                    if (rodada.desafiosEscolhidos.length !== idsValidos.size) return false;
+                    return salvarRodada(rodadaVazia(rodada.numero + 1));
+                });
+                atualizar();
+            });
+
+            window.addEventListener("storage", atualizar);
+            atualizar();
+        })();
+    </script>
 </body>
 </html>

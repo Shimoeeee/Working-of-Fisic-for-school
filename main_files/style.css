@@ -83,13 +83,11 @@ hr {
 }
 
 .game {
-    display: inline-block;
-    margin: 0 auto auto;
-    text-decoration: none;
-}
-
-.game button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-height: 54px;
+    margin: 0 auto auto;
     padding: 0 26px;
     border: 0;
     border-radius: 8px;
@@ -98,10 +96,11 @@ hr {
     cursor: pointer;
     font: 700 14px Arial, Helvetica, sans-serif;
     letter-spacing: 0.04em;
+    text-decoration: none;
     transition: background-color 160ms ease, transform 160ms ease;
 }
 
-.game:hover button {
+.game:hover {
     transform: translateY(-5px);
     background: var(--green-hover);
 }
@@ -128,7 +127,7 @@ hr {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .game button {
+    .game {
         transition: none;
     }
 }
