@@ -24,3 +24,19 @@ O cálculo é `velocidade (m/s) = distância entre sinais (m) / tempo fechado (s
 Os quatro trechos têm a mesma distância: início ao primeiro semáforo, entre os três semáforos e do último semáforo ao final. O relógio de jogo corre 6 vezes mais rápido que o relógio real. Movimento, contagem regressiva e semáforos usam os mesmos segundos simulados; cada abertura verde dura exatamente 5 segundos simulados.
 
 As escolhas da rodada ficam em `sessionStorage`: permanecem ao navegar entre as páginas na mesma aba e voltam ao início quando a sessão da aba termina.
+
+PROXIMO PASSO:
+RETIRAR TODAS AS IMPURESAS DA TELA DE DESAFIOS
+
+OBS: O RESULTADO SERÁ EM M/S, PARA ISSO DEVE MULTIPLICAR POR 3,6
+
+O QUE COLOCAR:
+BARULHO DE VITORIA
+PAGINA DE ACERTOS
+GABARITO AO TERMINAR A PAGINA
+COLOCAR SONS DURANTE O CARRO PERCORRER
+DEIXAR MENOS TEXTOS, POIS FICA CONFUSA
+
+
+BUGS:
+O JOGO NÃO ESTÁ CONTANDO OS 10 PONTOS POR PARTIDA

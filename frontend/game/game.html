@@ -13,6 +13,7 @@
     <header class="titulo-jogo">
         <h1>🚦 DESAFIO DA ONDA VERDE</h1>
         <p>Descubra a velocidade para atravessar os sinais no verde.</p>
+        <p class="versao">versão 3 · tempo real · km/h ÷ 3,6 · desafios 1, 2 e 3</p>
     </header>
 
     <main>
@@ -26,14 +27,15 @@
 
             <h3>🏎️ Escolha a velocidade</h3>
             <div class="valor"><span id="velocidadeValor">20</span> km/h</div>
+            <div class="conversao" id="conversao"></div>
             <input type="range" id="velocidade" min="2" max="150" value="20" step="0.1" aria-label="Velocidade do veículo">
-            <div class="limite-velocidade">Limite de seleção: 150 km/h</div>
+            <div class="limite-velocidade">Limite de seleção: 150 km/h · o jogo divide por 3,6 para obter m/s · tempo real (1×)</div>
 
             <div class="dados">
                 <div>🏆 Pontos: <strong id="pontos">0</strong><span> / 30</span></div>
-                <div>⏱ Tempo simulado: <strong id="tempo">0.0 s</strong></div>
+                <div>⏱ Tempo: <strong id="tempo">0.0 s</strong></div>
                 <div>📏 Distância: <strong id="distanciaPercorrida">0 m</strong></div>
-                <div>🚦 Próxima abertura (s simulados): <strong id="contagemAbertura">Inicie o jogo</strong></div>
+                <div>🚦 Próxima abertura: <strong id="contagemAbertura">Inicie o jogo</strong></div>
             </div>
 
             <div class="acoes">
@@ -96,9 +98,9 @@
         const calculo = document.getElementById("calculo");
         const botaoIniciar = document.getElementById("iniciarJogo");
         const botaoReiniciar = document.getElementById("reiniciarJogo");
+        const conversaoElemento = document.getElementById("conversao");
 
-        const fatorTempoSimulacao = 6;
-        const larguraTrechoNaTela = 0.22;
+        const fatorTempoSimulacao = 1; // tempo real: 1 s do jogo = 1 s de verdade
         let inicio = 0;
         let animacao = null;
         let pontos = 0;
@@ -111,30 +113,32 @@
         let pixelsPorMetro = 1;
         let distanciaFinalMetros = 0;
         let velocidadeMs = 0;
-        let velocidadeEscolhida = Number(controle.value);
+        // O jogador escolhe km/h; o jogo divide por 3,6 e o carro anda essa quantidade de metros a cada segundo.
+        const MS_PARA_KMH = 3.6;
 
         document.getElementById("nomeDesafio").textContent = `Desafio ${desafio.id}`;
         const distanciaTotalDesafio = desafio.distanciaPorTrechoMetros * (desafio.quantidadeSemaforos + 1);
         document.getElementById("objetivoDesafio").textContent =
             `Percorra ${formatarNumero(distanciaTotalDesafio, 0)} m no total, em ${desafio.quantidadeSemaforos + 1} trechos iguais de ${formatarNumero(desafio.distanciaPorTrechoMetros, 0)} m. ` +
             `A contagem do primeiro semáforo começa na largada; a dos próximos começa quando o carro passa pelo sinal anterior. ` +
-            `Durante o jogo, cada sinal fica fechado por ${formatarNumero(desafio.tempoFechadoSegundos, 0)} s simulados; em seguida, abre por ${formatarNumero(desafio.duracaoVerdeSegundos, 0)} s simulados. ` +
+            `Durante o jogo, cada sinal fica fechado por ${formatarNumero(desafio.tempoFechadoSegundos, 0)} s; em seguida, abre por ${formatarNumero(desafio.duracaoVerdeSegundos, 0)} s. ` +
             `Agora calcule o resultado da forma ensinada no slide.`;
         document.getElementById("configDesafio").textContent =
             `${desafio.distanciaPorTrechoMetros} m do início ao Sinal 1, entre cada sinal e do Sinal 3 ao final. ` +
-            `${desafio.tempoFechadoSegundos} s simulados de fechamento, contados desde a largada ou a passagem pelo sinal anterior; depois, ${desafio.duracaoVerdeSegundos} s simulados de verde.`;
+            `${desafio.tempoFechadoSegundos} s de fechamento, contados desde a largada ou a passagem pelo sinal anterior; depois, ${desafio.duracaoVerdeSegundos} s de verde.`;
         document.getElementById("regrasTempoSemaforo").textContent =
             `Para o primeiro sinal, a contagem começa na largada; para os seguintes, começa quando o carro passa pelo anterior. ` +
-            `Depois do tempo fechado, o sinal abre por ${formatarNumero(desafio.duracaoVerdeSegundos, 0)} s simulados. ` +
-            `O relógio corre 6 vezes mais rápido que o real; movimento, contagem e aberturas usam os mesmos segundos simulados. ` +
-            `O seletor usa km/h; converta m/s × 3,6.`;
+            `Depois do tempo fechado, o sinal abre por ${formatarNumero(desafio.duracaoVerdeSegundos, 0)} s. ` +
+            `O jogo roda em tempo real (1×): 1 s do jogo é 1 s de verdade. ` +
+            `Escolha a velocidade em km/h; o jogo divide por 3,6 para obter m/s, e o carro anda essa quantidade de metros a cada segundo.`;
 
         function prepararPercurso() {
             const largura = estrada.clientWidth;
             const distancia = desafio.distanciaPorTrechoMetros;
-            const trechoPixels = largura * larguraTrechoNaTela;
-
-            posicaoInicial = largura * 0.05;
+            // A posição do carro é a FRENTE dele (ver .carro no CSS): o sinal "vê" o carro
+            // passar no mesmo instante em que o desenho do carro encosta nele.
+            posicaoInicial = carro.offsetWidth + largura * 0.02;
+            const trechoPixels = (largura * 0.97 - posicaoInicial) / (desafio.quantidadeSemaforos + 1);
             pixelsPorMetro = trechoPixels / distancia;
             distanciasSinais = sinais.map((_, indice) => distancia * (indice + 1));
             posicoes = distanciasSinais.map(metros => posicaoInicial + metros * pixelsPorMetro);
@@ -179,6 +183,17 @@
             return tempoAtual - excessoAlemDoSinal / velocidadeMs;
         }
 
+        function lerVelocidadeMs() {
+            const kmh = Math.min(jogo.velocidadeMaximaKmh, Math.max(2, Number(controle.value)));
+            return kmh / MS_PARA_KMH;
+        }
+
+        function atualizarMostradorVelocidade() {
+            const ms = lerVelocidadeMs();
+            velocidadeValor.textContent = formatarNumero(Number(controle.value), 1);
+            conversaoElemento.textContent = `${formatarNumero(Number(controle.value), 1)} km/h ÷ 3,6 = ${formatarNumero(ms, 2)} m/s (o carro anda ${formatarNumero(ms, 2)} m a cada segundo)`;
+        }
+
         function formatarNumero(valor, casas = 1) {
             return valor.toLocaleString("pt-BR", {
                 minimumFractionDigits: casas,
@@ -219,9 +234,7 @@
             passados = [];
             inicioContagemFechadaPorSinal = sinais.map((_, indice) => indice === 0 ? 0 : null);
             terminou = false;
-            velocidadeEscolhida = Math.min(jogo.velocidadeMaximaKmh, Math.max(2, Number(controle.value)));
-            controle.value = String(velocidadeEscolhida);
-            velocidadeMs = velocidadeEscolhida / 3.6;
+            velocidadeMs = lerVelocidadeMs();
 
             pontosElemento.textContent = "0";
             tempoElemento.textContent = "0,0 s";
@@ -232,13 +245,13 @@
             const temposChegada = distanciasSinais.map(distancia => distancia / velocidadeMs);
             const tempoAteOFim = distanciaFinalMetros / velocidadeMs;
             calculo.textContent =
-                `Velocidade escolhida: ${formatarNumero(velocidadeEscolhida)} km/h ` +
-                `(${formatarNumero(velocidadeMs, 2)} m/s). ` +
-                `Chegadas estimadas (s simulados): ${temposChegada.map((tempo, indice) => `Sinal ${indice + 1}: ${formatarNumero(tempo)} s`).join(" · ")} ` +
+                `Velocidade escolhida: ${formatarNumero(velocidadeMs, 2)} m/s ` +
+                `(${formatarNumero(velocidadeMs * MS_PARA_KMH, 1)} km/h). ` +
+                `Chegadas estimadas (s): ${temposChegada.map((tempo, indice) => `Sinal ${indice + 1}: ${formatarNumero(tempo)} s`).join(" · ")} ` +
                 `· fim: ${formatarNumero(tempoAteOFim)} s.`;
             mensagem.textContent = "A contagem do Sinal 1 começou. Ao passar por um sinal, começa a contagem do próximo.";
 
-            inicio = performance.now();
+            inicio = null; // o relógio começa no 1º quadro da animação (evita tempo negativo)
             atualizarContagemAbertura(0);
             animacao = requestAnimationFrame(animar);
         }
@@ -249,8 +262,8 @@
             todosVermelhos();
             contagemAberturaElemento.textContent = "Percurso concluído";
 
-            const velocidadeIdealMps = formatarNumero(desafio.velocidadeIdealMps, 0);
-            const velocidadeIdealKmh = formatarNumero(desafio.velocidadeIdealKmh, 1);
+            const velocidadeIdealMps = formatarNumero(desafio.velocidadeIdealMps, 2);
+            const velocidadeIdealKmh = formatarNumero(desafio.velocidadeIdealKmh, 0);
             const respostaIdeal = `${velocidadeIdealMps} m/s (${velocidadeIdealKmh} km/h)`;
             if (pontos === desafio.pontosMaximos) {
                 mensagem.textContent = `🏆 Vitória! Você passou pelos três sinais no verde e fez ${pontos} pontos. Velocidade ideal: ${respostaIdeal}.`;
@@ -262,6 +275,7 @@
         function animar(agora) {
             if (terminou) return;
 
+            if (inicio === null) inicio = agora;
             const tempoAtual = ((agora - inicio) / 1000) * fatorTempoSimulacao;
             const distanciaPercorrida = velocidadeMs * tempoAtual;
             const x = posicaoInicial + distanciaPercorrida * pixelsPorMetro;
@@ -279,11 +293,16 @@
                     const tempoPassagem = instantePassagem(indice, tempoAtual, distanciaPercorrida);
                     const estavaVerdeNaPassagem = semaforoAberto(indice, tempoPassagem);
                     passados.push(indice);
+                    const abreEm = inicioContagemFechadaPorSinal[indice] + desafio.tempoFechadoSegundos;
+                    const fechaEm = abreEm + desafio.duracaoVerdeSegundos;
+                    const resumo = `chegou em ${formatarNumero(tempoPassagem)} s; o verde era de ${formatarNumero(abreEm)} s a ${formatarNumero(fechaEm)} s`;
                     if (estavaVerdeNaPassagem) {
                         pontos += desafio.pontosPorSemaforo;
-                        mensagem.textContent = `✅ Sinal ${indice + 1} cruzado no verde! +${desafio.pontosPorSemaforo} pontos.`;
+                        mensagem.textContent = `✅ Sinal ${indice + 1} no verde! (${resumo}) +${desafio.pontosPorSemaforo} pontos.`;
+                    } else if (tempoPassagem < abreEm) {
+                        mensagem.textContent = `🔴 Sinal ${indice + 1}: ${resumo}. Chegou ${formatarNumero(abreEm - tempoPassagem)} s ANTES de abrir: velocidade alta demais.`;
                     } else {
-                        mensagem.textContent = `🔴 Sinal ${indice + 1} cruzado no vermelho. Continue acompanhando os ciclos.`;
+                        mensagem.textContent = `🔴 Sinal ${indice + 1}: ${resumo}. Chegou ${formatarNumero(tempoPassagem - fechaEm)} s DEPOIS de fechar: velocidade baixa demais.`;
                     }
                     pontosElemento.textContent = String(pontos);
 
@@ -320,15 +339,13 @@
             calculo.textContent = "A velocidade e os tempos de chegada serão calculados ao iniciar.";
         }
 
-        controle.addEventListener("input", () => {
-            const valor = Math.min(jogo.velocidadeMaximaKmh, Math.max(2, Number(controle.value)));
-            controle.value = String(valor);
-            velocidadeValor.textContent = String(valor);
-        });
+        controle.addEventListener("input", atualizarMostradorVelocidade);
 
         botaoIniciar.addEventListener("click", iniciar);
         botaoReiniciar.addEventListener("click", reiniciar);
 
+        window.addEventListener("resize", () => { if (terminou) prepararPercurso(); });
+        atualizarMostradorVelocidade();
         prepararPercurso();
         todosVermelhos();
     </script>

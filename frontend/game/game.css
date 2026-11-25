@@ -99,6 +99,11 @@ input[type="range"]:disabled {
     cursor: default;
 }
 
+.conversao {
+    color: #66736d;
+    font-size: 14px;
+}
+
 .limite-velocidade {
     margin-top: 6px;
     color: #66736d;
@@ -203,7 +208,7 @@ button:disabled {
     z-index: 5;
     top: 43%;
     left: 5%;
-    transform: translateY(-50%);
+    transform: translate(-100%, -50%); /* 'left' = frente do carro */
     font-size: 35px;
 }
 
@@ -296,4 +301,10 @@ button:disabled {
     button {
         transition: none;
     }
+}
+
+.titulo-jogo .versao {
+    margin: -10px 0 14px;
+    color: #8a9a90;
+    font-size: 11px;
 }

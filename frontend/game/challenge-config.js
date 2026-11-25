@@ -18,9 +18,9 @@
     }
 
     const DESAFIOS = Object.freeze({
-        1: criarDesafio(1, 300, 25, 5),
-        2: criarDesafio(2, 700, 20, 5),
-        3: criarDesafio(3, 100, 20, 5)
+        1: criarDesafio(1, 50, 15, 3),
+        2: criarDesafio(2, 300, 15, 3),
+        3: criarDesafio(3, 75, 15, 3)
     });
 
     window.SEMAFORO_GAME = Object.freeze({
