@@ -13,7 +13,7 @@
     <header class="titulo-jogo">
         <h1>🚦 DESAFIO DA ONDA VERDE</h1>
         <p>Descubra a velocidade para atravessar os sinais no verde.</p>
-        <p class="versao">versão 4 · tempo real · desafios 1, 2 e 3</p>
+        <p class="versao">versão 6 · tempo real · desafios 1, 2 e 3</p>
     </header>
 
     <main>
@@ -28,8 +28,20 @@
             <h3>🏎️ Escolha a velocidade</h3>
             <div class="valor"><span id="velocidadeValor">20</span> km/h</div>
             <div class="conversao" id="conversao">OBS: TRANSFORME PARA UNIDADE DE MEDIDA m/s</div>
-            <input type="range" id="velocidade" min="2" max="150" value="20" step="0.1" aria-label="Velocidade do veículo">
-            <div class="limite-velocidade">Limite de seleção: 150 km/h · tempo real (1×)</div>
+            <div class="seletor-velocidade">
+                <button type="button" id="menosVelocidade" class="botao-ajuste" aria-label="Diminuir 0,1 km/h">−</button>
+                <input type="range" id="velocidade" min="2" max="150" value="20" step="0.1" list="marcasVelocidade" aria-label="Barra de velocidade do veículo">
+                <button type="button" id="maisVelocidade" class="botao-ajuste" aria-label="Aumentar 0,1 km/h">+</button>
+            </div>
+            <datalist id="marcasVelocidade">
+                <option value="2"></option><option value="25"></option><option value="50"></option><option value="75"></option>
+                <option value="100"></option><option value="125"></option><option value="150"></option>
+            </datalist>
+            <div class="escala-velocidade"><span>2 km/h</span><span>150 km/h</span></div>
+            <div class="digitar-velocidade">
+                Ou digite: <input type="number" id="velocidadeNumero" min="2" max="150" step="0.1" value="20" aria-label="Digite a velocidade em km/h"> km/h
+            </div>
+            <label class="som"><input type="checkbox" id="somLigado" checked> 🔊 Música de vitória</label>
 
             <div class="dados">
                 <div>🏆 Pontos: <strong id="pontos">0</strong><span> / 30</span></div>
@@ -93,6 +105,10 @@
         const calculo = document.getElementById("calculo");
         const botaoIniciar = document.getElementById("iniciarJogo");
         const botaoReiniciar = document.getElementById("reiniciarJogo");
+        const somLigado = document.getElementById("somLigado");
+        const campoNumero = document.getElementById("velocidadeNumero");
+        const botaoMenos = document.getElementById("menosVelocidade");
+        const botaoMais = document.getElementById("maisVelocidade");
 
         const fatorTempoSimulacao = 1; // tempo real: 1 s do jogo = 1 s de verdade
         let inicio = 0;
@@ -106,6 +122,7 @@
         let inicioContagemFechadaPorSinal = [];
         let pixelsPorMetro = 1;
         let distanciaFinalMetros = 0;
+        let instantesPassagem = [];
         let velocidadeMs = 0;
         // O jogador escolhe km/h; o jogo divide por 3,6 e o carro anda essa quantidade de metros a cada segundo.
         const MS_PARA_KMH = 3.6;
@@ -151,25 +168,32 @@
             sinais.forEach((_, indice) => atualizarSemaforo(indice, false));
         }
 
+        // Tolerância de 0,05 s nas duas pontas: chegar NA HORA em que o sinal abre (ou quando ele
+        // fecha) conta ponto, sem depender de arredondamentos do computador.
+        const TOLERANCIA_S = 0.05;
+
         function semaforoAberto(indice, tempoAtual) {
             const inicioContagem = inicioContagemFechadaPorSinal[indice];
             if (inicioContagem === null || inicioContagem === undefined) return false;
 
             const tempoDesdeInicioContagem = tempoAtual - inicioContagem;
-            const toleranciaNumerica = Number.EPSILON * Math.max(
-                1,
-                Math.abs(tempoAtual),
-                Math.abs(inicioContagem),
-                desafio.tempoFechadoSegundos,
-                desafio.duracaoVerdeSegundos
-            ) * 16;
-            return tempoDesdeInicioContagem >= desafio.tempoFechadoSegundos - toleranciaNumerica &&
-                tempoDesdeInicioContagem < desafio.tempoFechadoSegundos + desafio.duracaoVerdeSegundos - toleranciaNumerica;
+            return tempoDesdeInicioContagem >= desafio.tempoFechadoSegundos - TOLERANCIA_S &&
+                tempoDesdeInicioContagem <= desafio.tempoFechadoSegundos + desafio.duracaoVerdeSegundos + TOLERANCIA_S;
         }
 
-        function instantePassagem(indice, tempoAtual, distanciaPercorrida) {
-            const excessoAlemDoSinal = distanciaPercorrida - distanciasSinais[indice];
-            return tempoAtual - excessoAlemDoSinal / velocidadeMs;
+        function travarControles(travar) {
+            controle.disabled = travar;
+            campoNumero.disabled = travar;
+            botaoMenos.disabled = travar;
+            botaoMais.disabled = travar;
+        }
+
+        function definirVelocidadeKmh(valor) {
+            const limitado = Math.min(jogo.velocidadeMaximaKmh, Math.max(2, Number(valor) || 2));
+            const arredondado = Math.round(limitado * 10) / 10;
+            controle.value = String(arredondado);
+            campoNumero.value = String(arredondado);
+            atualizarMostradorVelocidade();
         }
 
         function lerVelocidadeMs() {
@@ -179,6 +203,53 @@
 
         function atualizarMostradorVelocidade() {
             velocidadeValor.textContent = formatarNumero(Number(controle.value), 1);
+        }
+
+        // ---- Música de vitória (gerada no navegador, não precisa de arquivo de áudio) ----
+        let audioCtx = null;
+
+        function prepararAudio() {
+            // O navegador só libera o som depois de um clique; por isso é chamado no botão INICIAR.
+            try {
+                if (!audioCtx) {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    if (AC) audioCtx = new AC();
+                }
+                if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+            } catch (_) { /* sem áudio disponível: o jogo segue normalmente */ }
+        }
+
+        // cada nota: [frequência em Hz, início em s, duração em s, volume]
+        function tocarNotas(notas) {
+            if (!somLigado.checked || !audioCtx) return;
+            const base = audioCtx.currentTime + 0.03;
+            notas.forEach(([freq, inicioNota, duracao, volume = 0.2]) => {
+                const osc = audioCtx.createOscillator();
+                const ganho = audioCtx.createGain();
+                osc.type = "triangle";
+                osc.frequency.value = freq;
+                ganho.gain.setValueAtTime(0.0001, base + inicioNota);
+                ganho.gain.exponentialRampToValueAtTime(volume, base + inicioNota + 0.02);
+                ganho.gain.exponentialRampToValueAtTime(0.0001, base + inicioNota + duracao);
+                osc.connect(ganho).connect(audioCtx.destination);
+                osc.start(base + inicioNota);
+                osc.stop(base + inicioNota + duracao + 0.05);
+            });
+        }
+
+        // Toca a cada sinal cruzado no verde (sol - dó - mi, subindo)
+        function tocarAcerto() {
+            tocarNotas([[784, 0, 0.14], [1047, 0.13, 0.14], [1319, 0.26, 0.45]]);
+        }
+
+        // Fanfarra final: vitória nos três sinais
+        function tocarVitoriaFinal() {
+            tocarNotas([
+                [392, 0, 0.16], [523, 0.18, 0.16], [659, 0.36, 0.16], [784, 0.54, 0.22],
+                [659, 0.82, 0.14], [784, 0.98, 0.14],
+                [1047, 1.14, 1.1, 0.22],
+                [523, 1.14, 1.1, 0.12], [659, 1.14, 1.1, 0.12], [784, 1.14, 1.1, 0.12]
+            ]);
         }
 
         function formatarNumero(valor, casas = 1) {
@@ -222,14 +293,16 @@
             inicioContagemFechadaPorSinal = sinais.map((_, indice) => indice === 0 ? 0 : null);
             terminou = false;
             velocidadeMs = lerVelocidadeMs();
+            prepararAudio();
 
             pontosElemento.textContent = "0";
             tempoElemento.textContent = "0,0 s";
             distanciaElemento.textContent = "0 m";
-            controle.disabled = true;
+            travarControles(true);
             todosVermelhos();
 
             const temposChegada = distanciasSinais.map(distancia => distancia / velocidadeMs);
+            instantesPassagem = temposChegada; // instante exato (s) em que o carro cruza cada sinal
             const tempoAteOFim = distanciaFinalMetros / velocidadeMs;
             calculo.textContent =
                 `Velocidade escolhida: ${formatarNumero(velocidadeMs, 2)} m/s ` +
@@ -245,7 +318,7 @@
 
         function finalizar() {
             terminou = true;
-            controle.disabled = false;
+            travarControles(false);
             todosVermelhos();
             contagemAberturaElemento.textContent = "Percurso concluído";
 
@@ -253,6 +326,7 @@
             const velocidadeIdealKmh = formatarNumero(desafio.velocidadeIdealKmh, 0);
             const respostaIdeal = `${velocidadeIdealMps} m/s (${velocidadeIdealKmh} km/h)`;
             if (pontos === desafio.pontosMaximos) {
+                tocarVitoriaFinal();
                 mensagem.textContent = `🏆 Vitória! Você passou pelos três sinais no verde e fez ${pontos} pontos. Velocidade ideal: ${respostaIdeal}.`;
             } else {
                 mensagem.textContent = `Fim do percurso! Pontuação: ${pontos}/${desafio.pontosMaximos}. Tente novamente com outra velocidade.`;
@@ -277,7 +351,7 @@
 
                 if (!passados.includes(indice) && x >= posicoes[indice]) {
                     // A animação pode detectar a passagem alguns milissegundos depois do instante real.
-                    const tempoPassagem = instantePassagem(indice, tempoAtual, distanciaPercorrida);
+                    const tempoPassagem = instantesPassagem[indice];
                     const estavaVerdeNaPassagem = semaforoAberto(indice, tempoPassagem);
                     passados.push(indice);
                     const abreEm = inicioContagemFechadaPorSinal[indice] + desafio.tempoFechadoSegundos;
@@ -285,6 +359,7 @@
                     const resumo = `chegou em ${formatarNumero(tempoPassagem)} s; o verde era de ${formatarNumero(abreEm)} s a ${formatarNumero(fechaEm)} s`;
                     if (estavaVerdeNaPassagem) {
                         pontos += desafio.pontosPorSemaforo;
+                        tocarAcerto();
                         mensagem.textContent = `✅ Sinal ${indice + 1} no verde! (${resumo}) +${desafio.pontosPorSemaforo} pontos.`;
                     } else if (tempoPassagem < abreEm) {
                         mensagem.textContent = `🔴 Sinal ${indice + 1}: ${resumo}. Chegou ${formatarNumero(abreEm - tempoPassagem)} s ANTES de abrir: velocidade alta demais.`;
@@ -314,7 +389,7 @@
             terminou = true;
             pontos = 0;
             passados = [];
-            controle.disabled = false;
+            travarControles(false);
 
             prepararPercurso();
             todosVermelhos();
@@ -326,7 +401,16 @@
             calculo.textContent = "A velocidade e os tempos de chegada serão calculados ao iniciar.";
         }
 
-        controle.addEventListener("input", atualizarMostradorVelocidade);
+        controle.addEventListener("input", () => definirVelocidadeKmh(controle.value));
+        campoNumero.addEventListener("input", () => {
+            if (campoNumero.value !== "" && !Number.isNaN(Number(campoNumero.value))) {
+                controle.value = String(Math.min(jogo.velocidadeMaximaKmh, Math.max(2, Number(campoNumero.value))));
+                atualizarMostradorVelocidade();
+            }
+        });
+        campoNumero.addEventListener("change", () => definirVelocidadeKmh(campoNumero.value));
+        botaoMenos.addEventListener("click", () => definirVelocidadeKmh(Number(controle.value) - 0.1));
+        botaoMais.addEventListener("click", () => definirVelocidadeKmh(Number(controle.value) + 0.1));
 
         botaoIniciar.addEventListener("click", iniciar);
         botaoReiniciar.addEventListener("click", reiniciar);
