@@ -19,10 +19,10 @@
     <main>
         <section class="painel painel-jogo" aria-label="Controles do jogo">
             <h2 id="nomeDesafio">Desafio 1</h2>
-            <h3>🎯 Objetivo do desafio</h3>
+            <h3> Objetivo do desafio</h3>
             <p id="objetivoDesafio" class="objetivo-desafio"></p>
 
-            <h3>📏 Medidas do desafio</h3>
+            <h3> Medidas do desafio</h3>
             <p id="configDesafio" class="config-desafio"></p>
 
             <h3>🏎️ Escolha a velocidade</h3>
@@ -41,13 +41,13 @@
             <div class="digitar-velocidade">
                 Ou digite: <input type="number" id="velocidadeNumero" min="2" max="150" step="0.1" value="20" aria-label="Digite a velocidade em km/h"> km/h
             </div>
-            <label class="som"><input type="checkbox" id="somLigado" checked> 🔊 Música de vitória</label>
+            <label class="som"><input type="checkbox" id="somLigado" checked>  Música de vitória</label>
 
             <div class="dados">
-                <div>🏆 Pontos: <strong id="pontos">0</strong><span> / 30</span></div>
-                <div>⏱ Tempo: <strong id="tempo">0.0 s</strong></div>
-                <div>📏 Distância: <strong id="distanciaPercorrida">0 m</strong></div>
-                <div>🚦 Próxima abertura: <strong id="contagemAbertura">Inicie o jogo</strong></div>
+                <div> Pontos: <strong id="pontos">0</strong><span> / 30</span></div>
+                <div> Tempo: <strong id="tempo">0.0 s</strong></div>
+                <div> Distância: <strong id="distanciaPercorrida">0 m</strong></div>
+                <div> Próxima abertura: <strong id="contagemAbertura">Inicie o jogo</strong></div>
             </div>
 
             <div class="acoes">
@@ -327,7 +327,7 @@
             const respostaIdeal = `${velocidadeIdealMps} m/s (${velocidadeIdealKmh} km/h)`;
             if (pontos === desafio.pontosMaximos) {
                 tocarVitoriaFinal();
-                mensagem.textContent = `🏆 Vitória! Você passou pelos três sinais no verde e fez ${pontos} pontos. Velocidade ideal: ${respostaIdeal}.`;
+                mensagem.textContent = `Vitória! Você passou pelos três sinais no verde e fez ${pontos} pontos. Velocidade ideal: ${respostaIdeal}.`;
             } else {
                 mensagem.textContent = `Fim do percurso! Pontuação: ${pontos}/${desafio.pontosMaximos}. Tente novamente com outra velocidade.`;
             }
